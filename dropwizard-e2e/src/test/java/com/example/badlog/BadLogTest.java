@@ -4,10 +4,10 @@ import io.dropwizard.Configuration;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.DropwizardTestSupport;
 import io.dropwizard.testing.ResourceHelpers;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +28,7 @@ public class BadLogTest {
     private static PrintStream oldOut = System.out;
     private static PrintStream oldErr = System.err;
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         out = new ByteArrayOutputStream();
         err = new ByteArrayOutputStream();
@@ -39,7 +36,7 @@ public class BadLogTest {
         System.setErr(new PrintStream(err));
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         System.setOut(oldOut);
         System.setErr(oldErr);
@@ -48,12 +45,12 @@ public class BadLogTest {
     @Test
     public void thatLoggingIsntBrokenOnCleanup() throws Exception {
         BadLogApp.runMe(new String[]{"server"});
-        LOGGER.info("I'm after the test");
+        LOGGER.info("I'm tearDown the test");
         Thread.sleep(100);
 
         assertThat(new String(out.toByteArray(), UTF_8))
             .contains("Mayday we're going down")
-            .contains("I'm after the test");
+            .contains("I'm tearDown the test");
 
         assertThat(new String(err.toByteArray(), UTF_8))
             .contains("I'm a bad app");
@@ -61,7 +58,7 @@ public class BadLogTest {
 
     @Test
     public void testSupportShouldResetLogging() throws Exception {
-        final Path logFile = folder.newFile("example.log").toPath();
+        final Path logFile = Files.createTempFile("example",".log");
 
         // Clear out the log file
         Files.write(logFile, new byte[]{});

@@ -4,10 +4,11 @@ import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.testing.ResourceHelpers;
-import io.dropwizard.testing.junit.DropwizardAppRule;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import io.dropwizard.testing.junit5.DropwizardExtensionsSupport;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -23,14 +24,14 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+@ExtendWith(DropwizardExtensionsSupport.class)
 public class App1Test {
-    @ClassRule
-    public static final DropwizardAppRule<Configuration> RULE =
-        new DropwizardAppRule<>(App1.class, ResourceHelpers.resourceFilePath("app1/config.yml"));
+    public static final DropwizardAppExtension<Configuration> RULE =
+        new DropwizardAppExtension<>(App1.class, ResourceHelpers.resourceFilePath("app1/config.yml"));
 
     private static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = new JerseyClientBuilder(RULE.getEnvironment())
             .withProvider(new CustomJsonProvider(Jackson.newObjectMapper()))
@@ -56,7 +57,7 @@ public class App1Test {
 
     @Test
     public void earlyEofTest() throws IOException, InterruptedException {
-        // Only eof test so we ensure it's false before test
+        // Only eof test so we ensure it's false setUp test
         ((App1)RULE.getApplication()).wasEofExceptionHit = false;
 
         final URL url = new URL(String.format("http://localhost:%d/mapper", RULE.getLocalPort()));
